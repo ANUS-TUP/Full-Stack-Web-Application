@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniVerse Feed</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f7f9f9;
+      min-height: 100vh;
+      display: flex;
+      transition: background 0.4s, color 0.4s;
+    }
+
+    .layout { display: flex; width: 100%; flex-wrap: wrap; }
+
+    .sidebar {
+      width: 320px;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+      position: sticky; top: 0; height: 100vh;
+      flex-shrink: 0; z-index: 999;
+      transition: transform 0.3s ease;
+    }
+    .sidebar.hide { transform: translateX(-100%); }
+
+    .menu-toggle {
+      display: none; background: none; border: none;
+      font-size: 24px; margin: 20px; cursor: pointer;
+      position: absolute; top: 15px; left: 15px; z-index: 1000;
+    }
+
+    .sidebar header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .sidebar h1 { font-size: 24px; font-weight: bold; color: #000; transition: color 0.3s ease; }
+    .toggle-theme { background: none; border: none; font-size: 20px; cursor: pointer; color: #000; transition: color 0.3s ease; }
+
+    .post-box { display: flex; flex-direction: column; gap: 10px; }
+    .post-box textarea { padding: 10px; font-size: 14px; resize: none; }
+    .post-box input[type="file"] { font-size: 14px; }
+    .post-box button {
+      padding: 10px; background-color: #1da1f2; border: none; color: white;
+      cursor: pointer; border-radius: 6px; font-size: 16px;
+    }
+
+    .feed-area { flex: 1; padding: 30px 40px; overflow-y: auto; min-width: 0; }
+
+    .post {
+      display: flex; gap: 10px; background-color: rgba(0,0,0,0.05);
+      padding: 15px; margin-bottom: 15px; border-radius: 12px; flex-direction: row;
+    }
+
+    .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+
+    .post-content { flex: 1; }
+    .post-content strong { display: block; font-weight: 600; color: #1da1f2; }
+    .post-content p { margin: 5px 0; }
+
+    /* Compact media */
+    .post-content img,
+    .post-content video {
+      margin-top: 8px;
+      max-width: 100%;
+      max-height: 320px;         /* keeps media compact */
+      width: auto;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .actions {
+      display: flex; align-items: center; gap: 10px; margin-top: 10px;
+    }
+    .chip {
+      padding: 6px 12px; border-radius: 20px; border: none; cursor: pointer; font-size: 14px;
+      background: #eef3f7; color: #111;
+    }
+    .chip.like { background: #ff4d6d; color: #fff; }
+
+    .post-time { font-size: 12px; opacity: 0.6; margin-top: 5px; }
+
+    /* Comments */
+    .comments {
+      margin-top: 10px; background: rgba(0,0,0,0.04); border-radius: 10px; padding: 10px;
+    }
+    .comment-row {
+      display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px;
+    }
+    .comment-row .c-avatar {
+      width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+    }
+    .comment-bubble {
+      background: #fff; border-radius: 10px; padding: 8px 10px; flex: 1;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      font-size: 14px;
+    }
+    .comment-meta {
+      font-size: 11px; opacity: 0.7; margin-top: 2px;
+    }
+    .add-comment {
+      display: flex; gap: 8px; margin-top: 8px;
+    }
+    .add-comment input {
+      flex: 1; padding: 8px 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px;
+    }
+    .add-comment button {
+      padding: 8px 12px; border: none; border-radius: 8px; background: #1da1f2; color: #fff; cursor: pointer;
+    }
+
+    .logout-btn {
+      position: absolute; bottom: 20px; left: 20px;
+      padding: 10px 20px; background: #ff4d4d; color: white; border: none; border-radius: 6px; cursor: pointer;
+    }
+
+    /* Dark mode */
+    .dark-mode { background: #121212; color: white; }
+    .dark-mode .sidebar { background: #1e1e1e; }
+    .dark-mode .sidebar h1, .dark-mode .toggle-theme { color: white; }
+    .dark-mode .post { background: #2a2a2a; }
+    .dark-mode .post-box textarea, .dark-mode .post-box input, .dark-mode .post-box button { background: #333; color: white; }
+    .dark-mode .comments { background: #242424; }
+    .dark-mode .comment-bubble { background: #1f1f1f; color: #fff; border: 1px solid #333; }
+    .dark-mode .add-comment input { background: #1f1f1f; border-color: #333; color: #fff; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar { position: fixed; top: 0; left: 0; height: 100%; transform: translateX(-100%); }
+      .sidebar.show { transform: translateX(0%); }
+      .menu-toggle { display: block; }
+      .feed-area { padding: 20px; }
+      .post { flex-direction: column; }
+      .logout-btn { position: static; margin-top: 20px; width: 100%; }
+    }
+
+    @media (max-width: 500px) {
+      .sidebar h1 { font-size: 20px; }
+      .post-box button { font-size: 14px; }
+      .post-content p { font-size: 14px; }
+      .feed-area { padding: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <button class="menu-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+  
+
+  <div class="layout">
+    <div class="sidebar" id="sidebar">
+      <header>
+        <h1 id="logoText">MiniVerse</h1>
+        <button class="toggle-theme" onclick="toggleTheme()">
+          <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+      </header>
+
+      <form id="postForm" class="post-box">
+        <textarea id="postContent" rows="3" placeholder="What's happening?"></textarea>
+        <input type="file" id="mediaUpload" accept="image/*,video/*" />
+        <button type="submit">Post</button>
+      </form>
+
+      <button id="logoutBtn" class="logout-btn">Logout</button>
+    </div>
+
+    <div class="feed-area">
+      <div id="feed"></div>
+    </div>
+  </div>
+  
+  <script src="app.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore,
+      collection, addDoc, serverTimestamp,
+      onSnapshot, query, orderBy,
+      updateDoc, doc, arrayUnion, arrayRemove
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDol6dC2C8ftFTE4YVj36Ym7L_miwJLi40",
+      authDomain: "miniverse-0608.firebaseapp.com",
+      projectId: "miniverse-0608",
+      storageBucket: "miniverse-0608.appspot.com",
+      messagingSenderId: "166927305958",
+      appId: "1:166927305958:web:72499270dd58820f103f27"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const postForm = document.getElementById("postForm");
+    const postContent = document.getElementById("postContent");
+    const mediaUpload = document.getElementById("mediaUpload");
+    const feed = document.getElementById("feed");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    logoutBtn.addEventListener("click", () => {
+      signOut(auth).then(() => (window.location.href = "login.html"));
+    });
+
+    const CLOUD_NAME = "drvtii2mb";
+    const UPLOAD_PRESET = "miniverse_preset";
+
+    postForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const text = postContent.value.trim();
+      const file = mediaUpload.files[0];
+      let mediaURL = "";
+
+      if (!text && !file) return; // avoid empty posts
+
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", UPLOAD_PRESET);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        mediaURL = data.secure_url;
+      }
+
+      const user = auth.currentUser;
+      if (!user) return alert("Please login first.");
+
+      await addDoc(collection(db, "posts"), {
+        text,
+        media: mediaURL || null,
+        userId: user.uid,
+        photoURL: user.photoURL || null,
+        displayName: user.displayName || "Anonymous",
+        createdAt: serverTimestamp(),
+        likes: []
+      });
+
+      postContent.value = "";
+      mediaUpload.value = "";
+    });
+
+    function renderPost(docSnap, currentUser) {
+      const postData = docSnap.data();
+      const postId = docSnap.id;
+
+      const postDiv = document.createElement("div");
+      postDiv.className = "post";
+      postDiv.setAttribute("data-id", postId);
+
+      const avatar = document.createElement("img");
+      avatar.className = "avatar";
+      avatar.src = postData.photoURL || "https://ui-avatars.com/api/?name=U&background=1DA1F2&color=fff&size=64";
+
+      const contentWrap = document.createElement("div");
+      contentWrap.className = "post-content";
+
+      const name = document.createElement("strong");
+      name.textContent = postData.displayName || "Anonymous";
+
+      const content = document.createElement("p");
+      content.textContent = postData.text || "";
+
+      contentWrap.appendChild(name);
+      contentWrap.appendChild(content);
+
+      if (postData.media) {
+        const isVideo = postData.media.includes(".mp4") || postData.media.includes("video");
+        const mediaEl = isVideo ? document.createElement("video") : document.createElement("img");
+        mediaEl.src = postData.media;
+        if (isVideo) mediaEl.setAttribute("controls", true);
+        contentWrap.appendChild(mediaEl);
+      }
+
+      // Actions row (Like + Comments count)
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const likeBtn = document.createElement("button");
+      likeBtn.className = "chip like";
+      likeBtn.textContent = postData.likes?.includes(currentUser.uid)
+        ? `♥ Liked (${postData.likes.length})`
+        : `♡ Like (${postData.likes?.length || 0})`;
+
+      likeBtn.addEventListener("click", async () => {
+        const postRef = doc(db, "posts", postId);
+        if (postData.likes?.includes(currentUser.uid)) {
+          await updateDoc(postRef, { likes: arrayRemove(currentUser.uid) });
+        } else {
+          await updateDoc(postRef, { likes: arrayUnion(currentUser.uid) });
+        }
+      });
+
+      const commentsCountChip = document.createElement("button");
+      commentsCountChip.className = "chip";
+      commentsCountChip.textContent = "💬 0";
+
+      actions.appendChild(likeBtn);
+      actions.appendChild(commentsCountChip);
+      contentWrap.appendChild(actions);
+
+      const time = document.createElement("div");
+      const date = postData.createdAt?.toDate?.() || new Date();
+      time.textContent = new Date(date).toLocaleString();
+      time.className = "post-time";
+      contentWrap.appendChild(time);
+
+      // Comments section
+      const commentsBox = document.createElement("div");
+      commentsBox.className = "comments";
+
+      const commentsList = document.createElement("div");
+      commentsList.className = "comments-list";
+      commentsBox.appendChild(commentsList);
+
+      const addRow = document.createElement("div");
+      addRow.className = "add-comment";
+      const cInput = document.createElement("input");
+      cInput.placeholder = "Write a comment…";
+      cInput.maxLength = 500;
+      const cBtn = document.createElement("button");
+      cBtn.textContent = "Post";
+      addRow.appendChild(cInput);
+      addRow.appendChild(cBtn);
+      commentsBox.appendChild(addRow);
+
+      // Handle add comment
+      cBtn.addEventListener("click", async () => {
+        const text = cInput.value.trim();
+        if (!text) return;
+        const user = currentUser;
+        try {
+          await addDoc(collection(db, "posts", postId, "comments"), {
+            text,
+            userId: user.uid,
+            displayName: user.displayName || "Anonymous",
+            photoURL: user.photoURL || null,
+            createdAt: serverTimestamp()
+          });
+          cInput.value = "";
+        } catch (e) {
+          console.error("Add comment error:", e);
+        }
+      });
+
+      // Realtime comments listener
+      const commentsQuery = query(
+        collection(db, "posts", postId, "comments"),
+        orderBy("createdAt", "asc")
+      );
+      onSnapshot(commentsQuery, (snap) => {
+        commentsList.innerHTML = "";
+        let count = 0;
+        snap.forEach((cDoc) => {
+          const c = cDoc.data();
+          const row = document.createElement("div");
+          row.className = "comment-row";
+
+          const cav = document.createElement("img");
+          cav.className = "c-avatar";
+          cav.src = c.photoURL || "https://ui-avatars.com/api/?name=C&background=999&color=fff&size=64";
+
+          const bubble = document.createElement("div");
+          bubble.className = "comment-bubble";
+          bubble.innerHTML = `<strong>${c.displayName || "User"}</strong><br>${escapeHTML(c.text || "")}`;
+
+          const meta = document.createElement("div");
+          meta.className = "comment-meta";
+          const d = c.createdAt?.toDate?.() || new Date();
+          meta.textContent = new Date(d).toLocaleString();
+          bubble.appendChild(meta);
+
+          row.appendChild(cav);
+          row.appendChild(bubble);
+          commentsList.appendChild(row);
+          count++;
+        });
+        commentsCountChip.textContent = `💬 ${count}`;
+      });
+
+      postDiv.appendChild(avatar);
+      postDiv.appendChild(contentWrap);
+      contentWrap.appendChild(commentsBox);
+      feed.appendChild(postDiv);
+    }
+
+    // Simple HTML escape to avoid accidental HTML injection in comments
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[m]));
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) return (window.location.href = "login.html");
+
+      const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+      onSnapshot(q, (snapshot) => {
+        feed.innerHTML = "";
+        snapshot.forEach((docSnap) => {
+          renderPost(docSnap, user);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

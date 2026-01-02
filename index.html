@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniVerse | Say Less Mean More</title>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .top-right {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    .about-btn {
+      padding: 0.4rem 1rem;
+      border: 2px solid #1da1f2;
+      background: transparent;
+      color: #1da1f2;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: 0.3s ease;
+    }
+
+    .about-btn:hover {
+      background-color: #1da1f2;
+      color: #fff;
+    }
+
+    @media (max-width: 480px) {
+      .top-right {
+        top: 15px;
+        right: 15px;
+      }
+
+      .about-btn {
+        padding: 0.3rem 0.8rem;
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+
+  <!-- Firebase Config -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDol6dC2C8ftFTE4YVj36Ym7L_miwJLi40",
+      authDomain: "miniverse-0608.firebaseapp.com",
+      projectId: "miniverse-0608",
+      storageBucket: "miniverse-0608.firebasestorage.app",
+      messagingSenderId: "166927305958",
+      appId: "1:166927305958:web:72499270dd58820f103f27"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    window.firebaseApp = app;
+    window.firebaseAuth = getAuth(app);
+    window.firebaseDB = getFirestore(app);
+    window.firebaseStorage = getStorage(app);
+  </script>
+</head>
+
+<body>
+  <!-- About Button -->
+  <div class="top-right">
+    <a href="about.html" class="about-btn">About</a>
+  </div>
+
+  <div class="container">
+    <h1>MiniVerse <i class="fas fa-globe"></i></h1>
+    <p class="tagline">Say Less, Mean More</p>
+
+    <div class="buttons">
+      <a href="login.html" class="btn">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </a>
+      <a href="signup.html" class="btn">
+        <i class="fas fa-user-plus"></i> Signup
+      </a>
+    </div>
+
+    <button class="toggle-theme" title="Toggle Theme">
+      <i class="fas fa-adjust"></i> Switch Theme
+    </button>
+  </div>
+
+    <script src="app.js"></script>
+    
+</body>
+</html>
