@@ -52,6 +52,6 @@ Media uploads handled by Cloudinary
 Developer
 
 Anustup Das
-📧 dasanustup602@gmail.com
+📧 anustupdas311@gmail.com
 
 💻 https://github.com/ANUS-TUP
