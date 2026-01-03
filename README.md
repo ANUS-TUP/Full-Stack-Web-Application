@@ -26,7 +26,7 @@ Backend/Services: Firebase Authentication, Firestore
 
 Media Storage: Cloudinary
 
-Project Structure
+Project Structure:
 index.html     – Landing page  
 login.html     – Login  
 signup.html    – Signup  
@@ -51,9 +51,7 @@ Authentication & database handled by Firebase
 
 Media uploads handled by Cloudinary
 
-Developer
-
-Anustup Das
+Developer: Anustup Das
 📧 anustupdas311@gmail.com
 
 💻 https://github.com/ANUS-TUP
