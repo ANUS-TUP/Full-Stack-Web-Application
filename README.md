@@ -2,7 +2,9 @@ MiniVerse – Say Less, Mean More
 
 MiniVerse is a modern social media web application that allows users to sign up, log in, create posts with text or media, like posts, comment in real time, and switch themes. It is built using HTML, CSS, JavaScript, Firebase, and Cloudinary.
 
-Features
+Deploy Link: https://idyllic-concha-a7c1ce.netlify.app/
+
+Features:
 
 User authentication (Login / Signup)
 
